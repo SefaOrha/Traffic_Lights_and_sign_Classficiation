@@ -1,0 +1,66 @@
+from google.colab import drive
+
+drive.mount("/content/gdrive")
+
+import numpy as np
+import matplotlib.pyplot as plt 
+import pandas as pd 
+from keras.models import Sequential 
+from keras import layers
+from keras.layers import Dense, BatchNormalization, Dropout, Flatten 
+from keras.utils.np_utils import to_categorical 
+from keras.layers.convolutional import Conv2D, MaxPooling2D
+from sklearn.model_selection import train_test_split
+import pickle 
+from sklearn.model_selection import train_test_split
+import cv2
+
+
+import os
+os.chdir("gdrive/MyDrive")
+
+image_shape=(32,32)
+path="Dataset/Data/Trafik/Trafik"
+images=[]
+labels=[]
+for class_name in os.listdir(path):
+    for image_path in os.listdir(path+"/"+class_name):
+         labels.append(int(class_name))      
+         image=cv2.imread(path+"/"+class_name+"/"+image_path,0)
+         image=cv2.resize(image,(32,32))
+         images.append(image)
+         
+images=np.array(images)
+images=images.reshape(images.shape[0],images.shape[1],images.shape[2])
+labels=np.array(labels)
+labels = to_categorical(labels, 91)
+
+
+
+x_train,X_val_test,y_train,Y_val_test=train_test_split(images,labels,test_size=0.3)
+x_val,x_test,y_val,y_test=train_test_split(X_val_test,Y_val_test,test_size=0.5)
+data = pd.read_csv("labels.csv", encoding="ISO-8859-1")
+data
+
+
+
+#GRU MODELİ
+model=Sequential()
+model.add(layers.GRU(64,activation='tanh',input_shape=(32,32),return_sequences=True))
+
+model.add(layers.GRU(64,activation='tanh',return_sequences=True))
+
+model.add(layers.GRU(64,activation='tanh'))
+model.add(Flatten())
+model.add(Dense(91,activation='sigmoid'))
+model.compile(loss='binary_crossentropy',optimizer='adam',metrics=['acc'])
+model.summary()
+model.fit(x_train,y_train,epochs=100,batch_size=32,validation_data=(x_val,y_val))
+model.evaluate(x_test,y_test)
+model.save("Save")
+
+import random
+img=random.randrange(100)
+pred=model.predict(x_test[img].reshape(1,32,32,))
+plt.imshow(x_test[img])
+print(data.query("Classid=="+str(np.argmax(pred))))
