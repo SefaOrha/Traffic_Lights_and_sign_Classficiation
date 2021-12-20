@@ -18,7 +18,7 @@ import cv2
 
 import os
 os.chdir("gdrive/MyDrive")
-
+cd Dataset/
 image_shape=(32,32)
 path="Dataset/Data/Trafik/Trafik"
 images=[]
@@ -66,3 +66,19 @@ img=random.randrange(100)
 pred=model.predict(x_test[img].reshape(1,32,32))
 plt.imshow(x_test[img])
 print(data.query("Classid=="+str(np.argmax(pred))))
+
+
+plt.plot(history.history['acc'])
+plt.plot(history.history['val_acc'])
+plt.title('LSTM MODEL BAŞARI')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('LSTM MODEL KAYIP')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
